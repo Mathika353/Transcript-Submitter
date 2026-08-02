@@ -1,13 +1,10 @@
 // Receives a submitted transcript from the website and creates a page in the
-// Notion "Transcript Entries" database. Written using the Web Standard
-// Request/Response API (rather than the older Node (req, res) style), which
-// is the current expected format for Vercel Functions.
+// Notion "Transcript Entries" database. Written for Netlify Functions (V2,
+// Web Standard Request/Response format).
 //
-// Required environment variables (Vercel -> Project Settings -> Environment Variables):
+// Required environment variables (Netlify -> Site configuration -> Environment variables):
 //   NOTION_API_KEY             - secret from your Notion internal integration
 //   NOTION_TRANSCRIPTS_DB_ID   - 7671babfd97b483c957c3be4ad7565bd (the Transcript Entries database)
-
-export const config = { runtime: "nodejs" };
 
 var CLIENT_PAGE_IDS = {
   "Semida Repta": "3ab78d7c-4315-816f-9fe2-fbf83565a692",
@@ -113,8 +110,8 @@ function json(data, status) {
   });
 }
 
-export default async function handler(request) {
-  if (request.method !== "POST") {
+export default async (req) => {
+  if (req.method !== "POST") {
     return json({ error: "Use POST" }, 405);
   }
 
@@ -127,7 +124,7 @@ export default async function handler(request) {
 
   var body;
   try {
-    body = await request.json();
+    body = await req.json();
   } catch (e) {
     return json({ error: "Request body was not valid JSON" }, 400);
   }
@@ -186,4 +183,4 @@ export default async function handler(request) {
     console.error(err);
     return json({ error: err.message, detail: err.detail || null }, 500);
   }
-}
+};

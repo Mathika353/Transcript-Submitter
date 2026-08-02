@@ -102,6 +102,70 @@
   }
   .or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--rule);}
 
+  .tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .tab-btn{
+    flex:1;background:var(--card);border:1px solid var(--rule);color:var(--ink-soft);
+    font-size:13.5px;font-weight:600;padding:11px 14px;border-radius:6px;cursor:pointer;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .tab-btn.active{background:var(--forest);color:#fff;border-color:var(--forest);}
+  .tab-btn:not(.active):hover{border-color:var(--brass);}
+
+  .bulk-dropzone{
+    border:2px dashed var(--rule);border-radius:6px;background:#fff;
+    padding:26px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;
+    margin-bottom:16px;
+  }
+  .bulk-dropzone:hover{border-color:var(--brass);}
+  .bulk-dropzone.dragover{border-color:var(--forest);background:var(--sage-light);}
+  .bulk-dropzone input[type=file]{display:none;}
+
+  .queue-list{border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+  .queue-header{
+    display:grid;gap:10px;align-items:center;padding:7px 12px;background:var(--rule-soft);
+    border-bottom:1px solid var(--rule);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--ink-soft);font-weight:700;
+  }
+  .queue-item{
+    display:grid;gap:10px;align-items:center;
+    padding:9px 12px;border-bottom:1px solid var(--rule-soft);background:#fff;font-size:12.5px;
+  }
+  .queue-list.layout-shared .queue-item, .queue-list.layout-shared .queue-header{grid-template-columns:1fr 150px 90px 28px;}
+  .queue-list.layout-varied .queue-item, .queue-list.layout-varied .queue-header{grid-template-columns:1fr 168px 150px 90px 28px;}
+  .queue-list.layout-multi .queue-item, .queue-list.layout-multi .queue-header{grid-template-columns:0.85fr 168px 168px 150px 90px 28px;}
+  .queue-item:last-child{border-bottom:none;}
+  .queue-item .qi-name{
+    font-family:var(--mono);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;color:var(--ink);
+  }
+  .queue-item input[type=date], .queue-item select{
+    font-size:12px;padding:5px 7px;border:1px solid var(--rule);border-radius:4px;background:#fff;
+    max-width:100%;
+  }
+  .queue-item select.qi-missing{border-color:var(--brick);background:var(--brick-light);}
+  .queue-item .qi-status{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+  .qi-status.pending{color:var(--ink-faint);}
+  .qi-status.uploading{color:var(--brass);}
+  .qi-status.done{color:var(--sage);}
+  .qi-status.error{color:var(--brick);}
+  .queue-item .qi-remove{
+    background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;
+    line-height:1;padding:2px 6px;border-radius:3px;
+  }
+  .queue-item .qi-remove:hover{background:var(--brick-light);color:var(--brick);}
+
+  .tabs.mini{margin-bottom:0;}
+  .tabs.mini .tab-btn{padding:8px 12px;font-size:12px;}
+
+  .empty-queue{padding:30px 16px;text-align:center;color:var(--ink-faint);font-size:13px;}
+
+  .progress-line{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12.5px;color:var(--ink-soft);margin-bottom:8px;
+  }
+  .progress-track{height:6px;background:var(--rule-soft);border-radius:3px;overflow:hidden;margin-bottom:16px;}
+  .progress-fill{height:100%;background:var(--forest);width:0%;transition:width .2s;}
+
   .form-actions{display:flex;align-items:center;gap:14px;margin-top:18px;}
   .btn{font-size:13px;font-weight:600;padding:11px 20px;border-radius:5px;border:1px solid transparent;cursor:pointer;transition:background .15s,opacity .15s;}
   .btn-primary{background:var(--forest);color:#fff;}
@@ -130,10 +194,15 @@
   <header class="top">
     <p class="eyebrow">TD Coaching &middot; CSA Team</p>
     <h1>Submit a Transcript</h1>
-    <p>Paste a call transcript below. It's saved straight into the <strong>Transcripts</strong> database in Notion, with a short AI summary at the top, so it's searchable and ask-able right away.</p>
+    <p>Saved straight into the <strong>Transcripts</strong> database in Notion, searchable and ask-able right away.</p>
   </header>
 
-  <section class="card">
+  <div class="tabs">
+    <button type="button" class="tab-btn active" id="tabSingleBtn">Single transcript</button>
+    <button type="button" class="tab-btn" id="tabBulkBtn">Bulk upload</button>
+  </div>
+
+  <section class="card" id="singlePanel">
     <form id="submitForm">
       <div class="field-grid">
         <div class="field">
@@ -188,6 +257,78 @@
       <div class="status" id="status"></div>
     </form>
   </section>
+
+  <section class="card" id="bulkPanel" style="display:none;">
+    <div class="field span2" style="margin-bottom:14px;">
+      <label>How many clients is this batch for?</label>
+      <div class="tabs">
+        <button type="button" class="tab-btn active" id="modeSingleBtn">Single client</button>
+        <button type="button" class="tab-btn" id="modeMultiBtn">Multiple clients</button>
+      </div>
+    </div>
+
+    <div id="singleModeControls">
+      <div class="field-grid">
+        <div class="field">
+          <label for="bulk-client">Client</label>
+          <select id="bulk-client" required></select>
+        </div>
+        <div class="field">
+          <label>Meeting type</label>
+          <div class="tabs mini">
+            <button type="button" class="tab-btn active" id="typeSameBtn">Same for all files</button>
+            <button type="button" class="tab-btn" id="typeVariedBtn">Different per file</button>
+          </div>
+        </div>
+      </div>
+      <div class="field span2" id="sharedTypeField" style="margin-top:12px;">
+        <label for="bulk-type-shared">Meeting type (applies to every file below)</label>
+        <select id="bulk-type-shared">
+          <option value="Blueprint Meeting">Blueprint Meeting</option>
+          <option value="Gary Coaching Call">Gary Coaching Call</option>
+          <option value="Team Training">Team Training</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="multiModeControls" style="display:none;">
+      <p class="hint" style="margin:0;">No shared client here &mdash; each file below gets its own client and meeting type.</p>
+    </div>
+
+    <div class="field span2" style="margin-top:14px;">
+      <label for="bulk-name">Submitted by</label>
+      <input type="text" id="bulk-name" placeholder="Your name" required>
+    </div>
+
+    <p class="hint" style="margin:10px 0 14px;">Each file's date is guessed from its filename &mdash; check and edit any that guessed wrong before submitting.</p>
+
+    <div class="bulk-dropzone" id="bulkDropZone">
+      <div class="dz-icon">&#128193;</div>
+      <div class="dz-main"><strong>Drag &amp; drop multiple files</strong> here, or click to browse</div>
+      <div class="dz-sub">.txt, .vtt, .srt, or .md &mdash; select or drop as many as you like</div>
+      <input type="file" id="bulk-files" accept=".txt,.vtt,.srt,.md,text/plain" multiple>
+    </div>
+
+    <div class="queue-list layout-shared" id="queueList">
+      <div class="empty-queue">No files queued yet.</div>
+    </div>
+
+    <div class="progress-line" id="progressLine" style="display:none;">
+      <span id="progressText">0 of 0</span>
+      <span id="progressPercent">0%</span>
+    </div>
+    <div class="progress-track" id="progressTrack" style="display:none;">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" id="bulkSubmitBtn" disabled>Submit all (0)</button>
+      <span class="hint" id="bulkHint">Add files above to get started.</span>
+    </div>
+
+    <div class="status" id="bulkStatus"></div>
+  </section>
 </div>
 
 <script>
@@ -216,9 +357,11 @@
   }
 
   function populateClients(){
-    $("f-client").innerHTML = CLIENTS.map(function(c){
+    var optionsHtml = CLIENTS.map(function(c){
       return '<option value="'+c+'">'+c+'</option>';
     }).join("");
+    $("f-client").innerHTML = optionsHtml;
+    $("bulk-client").innerHTML = optionsHtml;
   }
 
   function showStatus(kind, html){
@@ -227,11 +370,345 @@
     el.innerHTML = html;
   }
 
+  /* ---------------- tabs ---------------- */
+
+  function wireTabs(){
+    $("tabSingleBtn").addEventListener("click", function(){
+      $("singlePanel").style.display = "";
+      $("bulkPanel").style.display = "none";
+      $("tabSingleBtn").classList.add("active");
+      $("tabBulkBtn").classList.remove("active");
+    });
+    $("tabBulkBtn").addEventListener("click", function(){
+      $("singlePanel").style.display = "none";
+      $("bulkPanel").style.display = "";
+      $("tabBulkBtn").classList.add("active");
+      $("tabSingleBtn").classList.remove("active");
+    });
+  }
+
+  /* ---------------- bulk upload ---------------- */
+
+  var MONTHS = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  var MEETING_TYPES = ["Blueprint Meeting","Gary Coaching Call","Team Training","Other"];
+
+  function guessDateFromFilename(filename){
+    var m = filename.match(/([A-Za-z]{3,9})\.?\s+(\d{1,2})[a-z]{0,2},?\s+(\d{4})/i);
+    if(!m) return "";
+    var mon = MONTHS[m[1].slice(0,3).toLowerCase()];
+    if(!mon) return "";
+    var day = String(parseInt(m[2],10)).padStart(2,"0");
+    var monStr = String(mon).padStart(2,"0");
+    return m[3] + "-" + monStr + "-" + day;
+  }
+
+  var bulkMode = "single";      // "single" | "multi"
+  var singleTypeMode = "same";  // "same" | "varied" -- only used when bulkMode === "single"
+
+  var queue = []; // { id, file, name, date, client, meetingType, status, message }
+  var queueIdCounter = 0;
+
+  function addFilesToQueue(fileList){
+    Array.prototype.forEach.call(fileList, function(file){
+      queue.push({
+        id: ++queueIdCounter,
+        file: file,
+        name: file.name,
+        date: guessDateFromFilename(file.name) || todayStr(),
+        client: "",
+        meetingType: "",
+        status: "pending",
+        message: ""
+      });
+    });
+    renderQueue();
+  }
+
+  function removeFromQueue(id){
+    queue = queue.filter(function(q){ return q.id !== id; });
+    renderQueue();
+  }
+
+  function statusLabel(s){
+    if(s === "pending") return "Pending";
+    if(s === "uploading") return "Saving\u2026";
+    if(s === "done") return "Saved";
+    if(s === "error") return "Failed";
+    return s;
+  }
+
+  function getQueueLayout(){
+    if(bulkMode === "multi") return "multi";
+    if(singleTypeMode === "varied") return "varied";
+    return "shared";
+  }
+
+  function clientOptionsHtml(selected){
+    return '<option value="">Select client\u2026</option>' + CLIENTS.map(function(c){
+      return '<option value="'+c+'"'+(c===selected?" selected":"")+'>'+c+'</option>';
+    }).join("");
+  }
+
+  function typeOptionsHtml(selected){
+    return '<option value="">Select type\u2026</option>' + MEETING_TYPES.map(function(t){
+      return '<option value="'+t+'"'+(t===selected?" selected":"")+'>'+t+'</option>';
+    }).join("");
+  }
+
+  function queueHeaderHtml(layout){
+    if(layout === "shared") return '<div class="queue-header"><span>File</span><span>Date</span><span>Status</span><span></span></div>';
+    if(layout === "varied") return '<div class="queue-header"><span>File</span><span>Meeting Type</span><span>Date</span><span>Status</span><span></span></div>';
+    return '<div class="queue-header"><span>File</span><span>Client</span><span>Meeting Type</span><span>Date</span><span>Status</span><span></span></div>';
+  }
+
+  function renderQueue(){
+    var layout = getQueueLayout();
+    var listEl = $("queueList");
+    listEl.className = "queue-list layout-" + layout;
+
+    if(queue.length === 0){
+      listEl.innerHTML = '<div class="empty-queue">No files queued yet.</div>';
+    } else {
+      var rows = queue.map(function(q){
+        var locked = (q.status === "uploading" || q.status === "done");
+        var nameCell = '<span class="qi-name" title="'+escapeHtml(q.name)+'">'+escapeHtml(q.name)+'</span>';
+
+        var clientCell = "";
+        if(layout === "multi"){
+          clientCell = '<select data-role="qi-client" data-id="'+q.id+'" class="'+(!q.client?"qi-missing":"")+'" '+(locked?"disabled":"")+'>'+clientOptionsHtml(q.client)+'</select>';
+        }
+
+        var typeCell = "";
+        if(layout === "varied" || layout === "multi"){
+          typeCell = '<select data-role="qi-type" data-id="'+q.id+'" class="'+(!q.meetingType?"qi-missing":"")+'" '+(locked?"disabled":"")+'>'+typeOptionsHtml(q.meetingType)+'</select>';
+        }
+
+        var dateCell = '<input type="date" data-role="qi-date" data-id="'+q.id+'" value="'+q.date+'" '+(locked?"disabled":"")+'>';
+        var statusCell = '<span class="qi-status '+q.status+'">'+statusLabel(q.status)+'</span>';
+        var removeCell = '<button type="button" class="qi-remove" data-role="qi-remove" data-id="'+q.id+'" '+(q.status==="uploading"?"disabled":"")+' title="Remove">&times;</button>';
+
+        var cells = [nameCell];
+        if(clientCell) cells.push(clientCell);
+        if(typeCell) cells.push(typeCell);
+        cells.push(dateCell, statusCell, removeCell);
+
+        return '<div class="queue-item" data-id="'+q.id+'">'+cells.join("")+'</div>';
+      }).join("");
+
+      listEl.innerHTML = queueHeaderHtml(layout) + rows;
+    }
+
+    var n = queue.length;
+    $("bulkSubmitBtn").textContent = "Submit all (" + n + ")";
+    $("bulkSubmitBtn").disabled = n === 0;
+    $("bulkHint").textContent = n === 0 ? "Add files above to get started." : n + " file" + (n===1?"":"s") + " queued.";
+  }
+
+  function escapeHtml(str){
+    var div = document.createElement("div");
+    div.textContent = str == null ? "" : String(str);
+    return div.innerHTML;
+  }
+
+  function readFileText(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(e){ resolve(e.target.result); };
+      reader.onerror = function(){ reject(new Error("Could not read " + file.name)); };
+      reader.readAsText(file);
+    });
+  }
+
+  async function submitOne(entry, client, meetingType, submittedBy){
+    var text = await readFileText(entry.file);
+    var resp = await fetch("/api/submit-transcript", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client: client,
+        meetingType: meetingType,
+        meetingDate: entry.date,
+        submittedBy: submittedBy,
+        transcript: text.trim()
+      })
+    });
+    var data = await resp.json();
+    if(!resp.ok) throw new Error(data.error || "Something went wrong");
+    return data;
+  }
+
+  function setBulkStatus(kind, html){
+    var el = document.getElementById("bulkStatus");
+    el.className = "status show " + kind;
+    el.innerHTML = html;
+  }
+
+  function setBulkMode(mode){
+    bulkMode = mode;
+    $("modeSingleBtn").classList.toggle("active", mode === "single");
+    $("modeMultiBtn").classList.toggle("active", mode === "multi");
+    $("singleModeControls").style.display = mode === "single" ? "" : "none";
+    $("multiModeControls").style.display = mode === "multi" ? "" : "none";
+    renderQueue();
+  }
+
+  function setSingleTypeMode(mode){
+    singleTypeMode = mode;
+    $("typeSameBtn").classList.toggle("active", mode === "same");
+    $("typeVariedBtn").classList.toggle("active", mode === "varied");
+    $("sharedTypeField").style.display = mode === "same" ? "" : "none";
+    renderQueue();
+  }
+
+  function wireBulk(){
+    var bulkDropZone = $("bulkDropZone");
+    var bulkFileInput = $("bulk-files");
+
+    $("modeSingleBtn").addEventListener("click", function(){ setBulkMode("single"); });
+    $("modeMultiBtn").addEventListener("click", function(){ setBulkMode("multi"); });
+    $("typeSameBtn").addEventListener("click", function(){ setSingleTypeMode("same"); });
+    $("typeVariedBtn").addEventListener("click", function(){ setSingleTypeMode("varied"); });
+
+    bulkDropZone.addEventListener("click", function(){ bulkFileInput.click(); });
+
+    bulkFileInput.addEventListener("change", function(){
+      if(this.files && this.files.length) addFilesToQueue(this.files);
+      this.value = "";
+    });
+
+    ["dragenter","dragover"].forEach(function(evt){
+      bulkDropZone.addEventListener(evt, function(e){
+        e.preventDefault(); e.stopPropagation();
+        bulkDropZone.classList.add("dragover");
+      });
+    });
+    ["dragleave","drop"].forEach(function(evt){
+      bulkDropZone.addEventListener(evt, function(e){
+        e.preventDefault(); e.stopPropagation();
+        bulkDropZone.classList.remove("dragover");
+      });
+    });
+    bulkDropZone.addEventListener("drop", function(e){
+      if(e.dataTransfer.files && e.dataTransfer.files.length) addFilesToQueue(e.dataTransfer.files);
+    });
+
+    $("queueList").addEventListener("change", function(e){
+      var id, entry;
+      var dateInput = e.target.closest('[data-role="qi-date"]');
+      if(dateInput){
+        id = Number(dateInput.getAttribute("data-id"));
+        entry = queue.find(function(q){ return q.id === id; });
+        if(entry) entry.date = dateInput.value;
+        return;
+      }
+      var clientSelect = e.target.closest('[data-role="qi-client"]');
+      if(clientSelect){
+        id = Number(clientSelect.getAttribute("data-id"));
+        entry = queue.find(function(q){ return q.id === id; });
+        if(entry){ entry.client = clientSelect.value; renderQueue(); }
+        return;
+      }
+      var typeSelect = e.target.closest('[data-role="qi-type"]');
+      if(typeSelect){
+        id = Number(typeSelect.getAttribute("data-id"));
+        entry = queue.find(function(q){ return q.id === id; });
+        if(entry){ entry.meetingType = typeSelect.value; renderQueue(); }
+        return;
+      }
+    });
+
+    $("queueList").addEventListener("click", function(e){
+      var btn = e.target.closest('[data-role="qi-remove"]');
+      if(!btn) return;
+      removeFromQueue(Number(btn.getAttribute("data-id")));
+    });
+
+    $("bulkSubmitBtn").addEventListener("click", async function(){
+      var submittedBy = $("bulk-name").value.trim();
+      if(!submittedBy){
+        setBulkStatus("err", "Please enter your name before submitting.");
+        return;
+      }
+
+      var layout = getQueueLayout();
+      var sharedClient = bulkMode === "single" ? $("bulk-client").value : "";
+      var sharedType = (bulkMode === "single" && singleTypeMode === "same") ? $("bulk-type-shared").value : "";
+
+      if(bulkMode === "single" && !sharedClient){
+        setBulkStatus("err", "Select a client for this batch before submitting.");
+        return;
+      }
+
+      saveMyName(submittedBy);
+
+      var pending = queue.filter(function(q){ return q.status === "pending" || q.status === "error"; });
+
+      var missingNames = [];
+      pending.forEach(function(q){
+        var effClient = layout === "multi" ? q.client : sharedClient;
+        var effType = layout === "shared" ? sharedType : q.meetingType;
+        if(!effClient || !effType || !q.date) missingNames.push(q.name);
+      });
+      if(missingNames.length){
+        renderQueue();
+        setBulkStatus("err", "Fill in every field for: " + missingNames.map(escapeHtml).join(", "));
+        return;
+      }
+
+      var total = pending.length;
+      var completed = 0;
+      var failed = 0;
+
+      $("bulkSubmitBtn").disabled = true;
+      $("progressLine").style.display = "flex";
+      $("progressTrack").style.display = "block";
+      document.getElementById("bulkStatus").className = "status";
+
+      for(var i = 0; i < pending.length; i++){
+        var entry = pending[i];
+        var effClient = layout === "multi" ? entry.client : sharedClient;
+        var effType = layout === "shared" ? sharedType : entry.meetingType;
+
+        entry.status = "uploading";
+        entry.message = "";
+        renderQueue();
+
+        try{
+          var result = await submitOne(entry, effClient, effType, submittedBy);
+          entry.status = "done";
+          entry.message = result.pageUrl;
+        }catch(err){
+          entry.status = "error";
+          entry.message = err.message;
+          failed++;
+        }
+
+        completed++;
+        var pct = Math.round((completed/total)*100);
+        $("progressText").textContent = completed + " of " + total;
+        $("progressPercent").textContent = pct + "%";
+        $("progressFill").style.width = pct + "%";
+        renderQueue();
+      }
+
+      $("bulkSubmitBtn").disabled = false;
+
+      if(failed === 0){
+        setBulkStatus("ok", "All " + total + " file" + (total===1?"":"s") + " saved to Notion.");
+      } else {
+        setBulkStatus("err", (total - failed) + " of " + total + " saved. " + failed + " failed \u2014 fix and click Submit again to retry just those.");
+      }
+    });
+  }
+
   function init(){
     populateClients();
     $("f-date").value = todayStr();
     var name = loadMyName();
-    if(name) $("f-name").value = name;
+    if(name){ $("f-name").value = name; $("bulk-name").value = name; }
+
+    wireTabs();
+    wireBulk();
 
     $("f-transcript").addEventListener("input", function(){
       $("charCount").textContent = this.value.length.toLocaleString() + " characters";

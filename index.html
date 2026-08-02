@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submit a Transcript</title>
+<style>
+  :root{
+    --paper:#f1ecdd;
+    --card:#fbf8ef;
+    --ink:#23281f;
+    --ink-soft:#5b5a4c;
+    --ink-faint:#8c8873;
+    --forest:#2f4b3c;
+    --forest-light:#3f6350;
+    --brass:#a9823d;
+    --rule:#ddd2ae;
+    --rule-soft:#e8e0c8;
+    --sage-light:#e5ecdf;
+    --sage:#5c7a52;
+    --brick:#9c3b2e;
+    --brick-light:#f4e2dd;
+    --shadow: 0 1px 2px rgba(35,40,31,0.06), 0 6px 20px rgba(35,40,31,0.07);
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  :focus-visible{outline:2px solid var(--forest);outline-offset:2px;border-radius:3px;}
+
+  .wrap{max-width:760px;margin:0 auto;padding:36px 20px 80px;}
+
+  header.top{
+    margin-bottom:28px;border-bottom:2px solid var(--ink);padding-bottom:18px;
+  }
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--brass);margin:0 0 6px;
+  }
+  h1{
+    font-family:var(--serif);font-weight:600;font-size:32px;margin:0 0 6px;
+    color:var(--forest);letter-spacing:-0.01em;
+  }
+  header.top p{margin:0;color:var(--ink-soft);font-size:14px;max-width:52ch;}
+
+  .card{
+    background:var(--card);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);
+    padding:24px 24px 22px;margin-bottom:20px;
+  }
+
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+  .field.span2{grid-column:1 / -1;}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;}
+  select, input[type=text], input[type=date]{
+    font-family:var(--sans);font-size:14px;padding:9px 10px;border:1px solid var(--rule);
+    border-radius:5px;background:#fff;color:var(--ink);
+  }
+  textarea{
+    font-family:var(--mono);font-size:12.5px;line-height:1.6;padding:12px;border:1px solid var(--rule);
+    border-radius:5px;background:#fff;color:var(--ink);resize:vertical;min-height:280px;
+  }
+
+  .dropzone{
+    border:2px dashed var(--rule);border-radius:6px;background:#fff;
+    padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;
+    margin-bottom:10px;
+  }
+  .dropzone:hover{border-color:var(--brass);}
+  .dropzone.dragover{border-color:var(--forest);background:var(--sage-light);}
+  .dropzone .dz-icon{font-size:22px;margin-bottom:4px;}
+  .dropzone .dz-main{font-size:13.5px;color:var(--ink-soft);}
+  .dropzone .dz-main strong{color:var(--forest);}
+  .dropzone .dz-sub{font-size:11.5px;color:var(--ink-faint);margin-top:3px;}
+  .dropzone input[type=file]{display:none;}
+
+  .file-loaded{
+    display:none;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--sage-light);border:1px solid var(--sage);border-radius:5px;
+    padding:9px 12px;margin-bottom:10px;font-size:12.5px;color:var(--forest);
+  }
+  .file-loaded.show{display:flex;}
+  .file-loaded .fname{font-family:var(--mono);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-loaded button{
+    background:none;border:none;color:var(--brick);font-size:11px;font-weight:600;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;
+  }
+
+  .or-divider{
+    display:flex;align-items:center;gap:10px;margin:2px 0 10px;
+    font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);
+  }
+  .or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--rule);}
+
+  .form-actions{display:flex;align-items:center;gap:14px;margin-top:18px;}
+  .btn{font-size:13px;font-weight:600;padding:11px 20px;border-radius:5px;border:1px solid transparent;cursor:pointer;transition:background .15s,opacity .15s;}
+  .btn-primary{background:var(--forest);color:#fff;}
+  .btn-primary:hover{background:var(--forest-light);}
+  .btn-primary:disabled{opacity:.6;cursor:default;}
+  .hint{font-size:12px;color:var(--ink-faint);}
+
+  .status{
+    margin-top:16px;padding:14px 16px;border-radius:6px;font-size:13.5px;line-height:1.6;display:none;
+  }
+  .status.show{display:block;}
+  .status.ok{background:var(--sage-light);color:var(--forest);border:1px solid var(--sage);}
+  .status.err{background:var(--brick-light);color:var(--brick);border:1px solid var(--brick);}
+  .status a{color:inherit;font-weight:600;}
+
+  .char-count{font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:right;margin-top:4px;}
+
+  @media (max-width:640px){
+    .field-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">TD Coaching &middot; CSA Team</p>
+    <h1>Submit a Transcript</h1>
+    <p>Paste a call transcript below. It's saved straight into the <strong>Transcripts</strong> database in Notion, with a short AI summary at the top, so it's searchable and ask-able right away.</p>
+  </header>
+
+  <section class="card">
+    <form id="submitForm">
+      <div class="field-grid">
+        <div class="field">
+          <label for="f-client">Client</label>
+          <select id="f-client" required></select>
+        </div>
+        <div class="field">
+          <label for="f-type">Meeting Type</label>
+          <select id="f-type">
+            <option value="Blueprint Meeting">Blueprint Meeting</option>
+            <option value="Gary Coaching Call">Gary Coaching Call</option>
+            <option value="Team Training">Team Training</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-date">Meeting Date</label>
+          <input type="date" id="f-date" required>
+        </div>
+        <div class="field">
+          <label for="f-name">Submitted By</label>
+          <input type="text" id="f-name" placeholder="Your name" required>
+        </div>
+      </div>
+
+      <div class="field span2">
+        <label for="f-transcript">Transcript</label>
+
+        <div class="dropzone" id="dropZone">
+          <div class="dz-icon">&#128193;</div>
+          <div class="dz-main"><strong>Drag &amp; drop</strong> a transcript file here, or click to browse</div>
+          <div class="dz-sub">.txt, .vtt, .srt, or .md &mdash; Zoom transcript exports work directly</div>
+          <input type="file" id="f-file" accept=".txt,.vtt,.srt,.md,text/plain">
+        </div>
+
+        <div class="file-loaded" id="fileLoaded">
+          <span class="fname" id="fileName"></span>
+          <button type="button" id="clearFile">Remove</button>
+        </div>
+
+        <div class="or-divider">or paste directly</div>
+
+        <textarea id="f-transcript" placeholder="Paste the full call transcript here..." required></textarea>
+        <div class="char-count" id="charCount">0 characters</div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submitBtn">Save to Notion</button>
+        <span class="hint">Takes a few seconds &mdash; longer transcripts take a little longer to save.</span>
+      </div>
+
+      <div class="status" id="status"></div>
+    </form>
+  </section>
+</div>
+
+<script>
+(function(){
+
+  var CLIENTS = [
+    "Ben Alvarez","Ben Sirrine","Bella Hanono","Bryce Westmoreland","Christopher Calnon",
+    "Danny Bellamy","David Matney","Drew Link","Ethan Grounds","Evelyn Kidonakis",
+    "Franklin A. Landers","French Moore III","Jaime Davenport","Jim Albrecht","Lynne Thomas",
+    "Mark Streitz","Michelle Lacues","Nick Gallegos","Paul Diaz","Praneeth Devabhaktuni",
+    "Semida Repta","Sundar Jagadeeshan","Varun Joseph"
+  ];
+
+  function $(id){ return document.getElementById(id); }
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+
+  function loadMyName(){
+    try{ return localStorage.getItem("ftl-my-name") || ""; }catch(e){ return ""; }
+  }
+  function saveMyName(name){
+    try{ localStorage.setItem("ftl-my-name", name); }catch(e){}
+  }
+
+  function populateClients(){
+    $("f-client").innerHTML = CLIENTS.map(function(c){
+      return '<option value="'+c+'">'+c+'</option>';
+    }).join("");
+  }
+
+  function showStatus(kind, html){
+    var el = $("status");
+    el.className = "status show " + kind;
+    el.innerHTML = html;
+  }
+
+  function init(){
+    populateClients();
+    $("f-date").value = todayStr();
+    var name = loadMyName();
+    if(name) $("f-name").value = name;
+
+    $("f-transcript").addEventListener("input", function(){
+      $("charCount").textContent = this.value.length.toLocaleString() + " characters";
+    });
+
+    function loadFileIntoTranscript(file){
+      if(!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e){
+        $("f-transcript").value = e.target.result;
+        $("charCount").textContent = e.target.result.length.toLocaleString() + " characters";
+        $("fileName").textContent = file.name + " (" + Math.round(file.size/1024).toLocaleString() + " KB)";
+        $("fileLoaded").classList.add("show");
+      };
+      reader.onerror = function(){
+        showStatus("err", "Couldn't read that file \u2014 try opening it and pasting the text directly instead.");
+      };
+      reader.readAsText(file);
+    }
+
+    var dropZone = $("dropZone");
+    var fileInput = $("f-file");
+
+    dropZone.addEventListener("click", function(){ fileInput.click(); });
+
+    fileInput.addEventListener("change", function(){
+      if(this.files && this.files[0]) loadFileIntoTranscript(this.files[0]);
+    });
+
+    ["dragenter","dragover"].forEach(function(evt){
+      dropZone.addEventListener(evt, function(e){
+        e.preventDefault(); e.stopPropagation();
+        dropZone.classList.add("dragover");
+      });
+    });
+
+    ["dragleave","drop"].forEach(function(evt){
+      dropZone.addEventListener(evt, function(e){
+        e.preventDefault(); e.stopPropagation();
+        dropZone.classList.remove("dragover");
+      });
+    });
+
+    dropZone.addEventListener("drop", function(e){
+      var files = e.dataTransfer.files;
+      if(files && files[0]) loadFileIntoTranscript(files[0]);
+    });
+
+    $("clearFile").addEventListener("click", function(){
+      fileInput.value = "";
+      $("fileLoaded").classList.remove("show");
+      $("f-transcript").value = "";
+      $("charCount").textContent = "0 characters";
+    });
+
+    $("submitForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+
+      var client = $("f-client").value;
+      var meetingType = $("f-type").value;
+      var meetingDate = $("f-date").value;
+      var submittedBy = $("f-name").value.trim();
+      var transcript = $("f-transcript").value.trim();
+
+      if(!client || !meetingDate || !submittedBy || !transcript){
+        showStatus("err", "Please fill in every field before saving.");
+        return;
+      }
+
+      saveMyName(submittedBy);
+
+      var btn = $("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Saving\u2026";
+      showStatus("ok", "Saving to Notion, this can take a moment for longer transcripts\u2026");
+
+      try{
+        var resp = await fetch("/api/submit-transcript", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ client: client, meetingType: meetingType, meetingDate: meetingDate, submittedBy: submittedBy, transcript: transcript })
+        });
+
+        var data = await resp.json();
+
+        if(!resp.ok){
+          throw new Error(data.error || "Something went wrong");
+        }
+
+        showStatus("ok", "Saved" + (data.summarized ? " with an AI summary" : "") + '. <a href="' + data.pageUrl + '" target="_blank" rel="noopener">Open the page in Notion &rarr;</a>');
+        $("f-transcript").value = "";
+        $("charCount").textContent = "0 characters";
+        $("fileLoaded").classList.remove("show");
+        $("f-file").value = "";
+      }catch(err){
+        showStatus("err", "Couldn't save: " + err.message);
+      }finally{
+        btn.disabled = false;
+        btn.textContent = "Save to Notion";
+      }
+    });
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>

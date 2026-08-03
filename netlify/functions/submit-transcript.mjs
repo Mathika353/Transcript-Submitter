@@ -29,7 +29,29 @@ var CLIENT_PAGE_IDS = {
   "Franklin A. Landers": "3ab78d7c-4315-8120-9c7d-e54f2cbd1df6",
   "Danny Bellamy": "3ab78d7c-4315-8162-ba14-cd153fe62374",
   "Michelle Lacues": "3ab78d7c-4315-815c-aa77-d636a1e40a5e",
-  "Sundar Jagadeeshan": "3ab78d7c-4315-8192-8b66-c2e514a23ed8"
+  "Sundar Jagadeeshan": "3ab78d7c-4315-8192-8b66-c2e514a23ed8",
+  "Lori Tijerino": "3b178d7c-4315-81c6-9723-db90239fb75b",
+  "Yvonne Caton-Hospedales": "3b178d7c-4315-8184-8697-cc4d157708a4",
+  "Hammad Aziz": "3b178d7c-4315-813f-82d1-fe8e7b116125",
+  "Douglas Hinterman": "3b178d7c-4315-81d0-9f0a-c791355b747f",
+  "Loc Tong": "3b178d7c-4315-81d3-ad86-d7a6f498de7e",
+  "Todd Anderson": "3b178d7c-4315-814f-b391-caf8ab442787",
+  "Douglas Kersey": "3b178d7c-4315-8134-acad-cfb2d90ff22d",
+  "Sina Reangber": "3b178d7c-4315-81c0-b61d-c9d40dd2feec",
+  "Homayoun Ardjmand": "3b178d7c-4315-818b-b8fd-f435320363ab",
+  "James Lohr": "3b178d7c-4315-8168-b761-e250b95c12c9",
+  "Gina Gomez": "3b178d7c-4315-8103-9ce0-e11db6c3a4a4",
+  "Mario Samaniego 01 - Las Cruces": "3b178d7c-4315-81ce-81aa-dbaa6025ed6d",
+  "Mario Samaniego 02 - Alamogordo": "3b178d7c-4315-81a7-b9a7-cbb4e9ee442a",
+  "Justin Norbo": "3b178d7c-4315-819d-9387-e5fd1bfdf0a1",
+  "Bahram Hamidi (Murray, New York)": "3b178d7c-4315-816e-ba3c-cbd9de5387a4",
+  "Bahram Hamidi (Greene, Brooklyn)": "3b178d7c-4315-8113-9ece-e4bf2b2873a6",
+  "Patterson Shedd": "3b178d7c-4315-8194-a298-c884a955f301",
+  "Eric Kaleka": "3b178d7c-4315-81ab-82e2-f683fa6204ad",
+  "Elizabeth Kubasko": "3b178d7c-4315-819e-911a-ce71516a9e2a",
+  "Victor Bauer": "3b178d7c-4315-81ef-bc61-c6efaf252774",
+  "Kellan Clark": "3b178d7c-4315-81a3-9b9b-f5aa17d7d62d",
+  "Tyler Kurle": "3b178d7c-4315-81da-a73b-f78aa4ef4155"
 };
 
 var NOTION_VERSION = "2022-06-28";

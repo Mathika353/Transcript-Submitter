@@ -335,17 +335,7 @@
 <script>
 (function(){
 
-  var CLIENTS = [
-    "Bahram Hamidi (Greene, Brooklyn)","Bahram Hamidi (Murray, New York)","Ben Alvarez","Ben Sirrine",
-    "Bella Hanono","Bryce Westmoreland","Christopher Calnon","Danny Bellamy","David Matney","Douglas Hinterman",
-    "Douglas Kersey","Drew Link","Eric Kaleka","Elizabeth Kubasko","Ethan Grounds","Evelyn Kidonakis",
-    "Franklin A. Landers","French Moore III","Gina Gomez","Hammad Aziz","Homayoun Ardjmand",
-    "Jaime Davenport","James Lohr","Jim Albrecht","Justin Norbo","Kellan Clark","Loc Tong",
-    "Lori Tijerino","Lynne Thomas","Mario Samaniego 01 - Las Cruces","Mario Samaniego 02 - Alamogordo",
-    "Mark Streitz","Michelle Lacues","Nick Gallegos","Patterson Shedd","Paul Diaz","Praneeth Devabhaktuni",
-    "Semida Repta","Sina Reangber","Sundar Jagadeeshan","Todd Anderson","Tyler Kurle","Varun Joseph",
-    "Victor Bauer","Yvonne Caton-Hospedales"
-  ];
+  var CLIENTS = [];
 
   function $(id){ return document.getElementById(id); }
 
@@ -359,6 +349,21 @@
   }
   function saveMyName(name){
     try{ localStorage.setItem("ftl-my-name", name); }catch(e){}
+  }
+
+  async function loadClients(){
+    try{
+      var resp = await fetch("/api/list-clients");
+      var data = await resp.json();
+      if(data.configured === false){
+        showStatus("error", "Client list isn't connected \u2014 check the site's Notion configuration.");
+        return;
+      }
+      CLIENTS = data.names || [];
+    }catch(e){
+      console.error("Failed to load client list", e);
+    }
+    populateClients();
   }
 
   function populateClients(){
@@ -707,7 +712,7 @@
   }
 
   function init(){
-    populateClients();
+    loadClients();
     $("f-date").value = todayStr();
     var name = loadMyName();
     if(name){ $("f-name").value = name; $("bulk-name").value = name; }

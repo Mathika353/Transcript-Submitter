@@ -3,56 +3,27 @@
 // Web Standard Request/Response format).
 //
 // Required environment variables (Netlify -> Site configuration -> Environment variables):
-//   NOTION_API_KEY             - secret from your Notion internal integration
-//   NOTION_TRANSCRIPTS_DB_ID   - 7671babfd97b483c957c3be4ad7565bd (the Transcript Entries database)
+//   NOTION_API_KEY              - secret from your Notion internal integration
+//   NOTION_TRANSCRIPTS_DB_ID    - 7671babfd97b483c957c3be4ad7565bd (the Transcript Entries database)
+//   NOTION_OPS_DASHBOARD_DB_ID  - 7e107e2403d44fcc989bda7a3e9dbabf (looks up the client's page id live)
 
-var CLIENT_PAGE_IDS = {
-  "Semida Repta": "3ab78d7c-4315-816f-9fe2-fbf83565a692",
-  "Evelyn Kidonakis": "3ab78d7c-4315-8174-a395-d8e5e2d7d951",
-  "Nick Gallegos": "3ab78d7c-4315-8102-8db1-d025bd9b416d",
-  "Paul Diaz": "3ab78d7c-4315-8157-bec4-e2f8e5a733dd",
-  "French Moore III": "3ab78d7c-4315-816b-93ae-d9fe4be2215f",
-  "Bella Hanono": "3ab78d7c-4315-8136-b07a-ec8124dc3f5f",
-  "Bryce Westmoreland": "3ab78d7c-4315-8164-a237-d8e0c2a95548",
-  "Mark Streitz": "3ab78d7c-4315-81a4-bed3-cb8f6be3c4c4",
-  "David Matney": "3ab78d7c-4315-81e5-b003-cf795ad4aa7f",
-  "Drew Link": "3ab78d7c-4315-81e9-856e-e38a3d783488",
-  "Praneeth Devabhaktuni": "3ab78d7c-4315-819f-acad-eb11ea03f0b9",
-  "Varun Joseph": "3ab78d7c-4315-81bc-adf9-d3e3784a0e2f",
-  "Jaime Davenport": "3ab78d7c-4315-8135-aeeb-fedd2fb6b189",
-  "Christopher Calnon": "3ab78d7c-4315-814c-81a0-f0e732ad4c01",
-  "Ben Alvarez": "3ab78d7c-4315-8187-8cfc-ff19a56c81d7",
-  "Ethan Grounds": "3ab78d7c-4315-811d-8845-fc22334b287f",
-  "Jim Albrecht": "3ab78d7c-4315-8150-84e2-d24e4d130a0c",
-  "Ben Sirrine": "3ab78d7c-4315-811f-ab9a-dada7d71c129",
-  "Lynne Thomas": "3ab78d7c-4315-8108-8f1b-f91449e0c32e",
-  "Franklin A. Landers": "3ab78d7c-4315-8120-9c7d-e54f2cbd1df6",
-  "Danny Bellamy": "3ab78d7c-4315-8162-ba14-cd153fe62374",
-  "Michelle Lacues": "3ab78d7c-4315-815c-aa77-d636a1e40a5e",
-  "Sundar Jagadeeshan": "3ab78d7c-4315-8192-8b66-c2e514a23ed8",
-  "Lori Tijerino": "3b178d7c-4315-81c6-9723-db90239fb75b",
-  "Yvonne Caton-Hospedales": "3b178d7c-4315-8184-8697-cc4d157708a4",
-  "Hammad Aziz": "3b178d7c-4315-813f-82d1-fe8e7b116125",
-  "Douglas Hinterman": "3b178d7c-4315-81d0-9f0a-c791355b747f",
-  "Loc Tong": "3b178d7c-4315-81d3-ad86-d7a6f498de7e",
-  "Todd Anderson": "3b178d7c-4315-814f-b391-caf8ab442787",
-  "Douglas Kersey": "3b178d7c-4315-8134-acad-cfb2d90ff22d",
-  "Sina Reangber": "3b178d7c-4315-81c0-b61d-c9d40dd2feec",
-  "Homayoun Ardjmand": "3b178d7c-4315-818b-b8fd-f435320363ab",
-  "James Lohr": "3b178d7c-4315-8168-b761-e250b95c12c9",
-  "Gina Gomez": "3b178d7c-4315-8103-9ce0-e11db6c3a4a4",
-  "Mario Samaniego 01 - Las Cruces": "3b178d7c-4315-81ce-81aa-dbaa6025ed6d",
-  "Mario Samaniego 02 - Alamogordo": "3b178d7c-4315-81a7-b9a7-cbb4e9ee442a",
-  "Justin Norbo": "3b178d7c-4315-819d-9387-e5fd1bfdf0a1",
-  "Bahram Hamidi (Murray, New York)": "3b178d7c-4315-816e-ba3c-cbd9de5387a4",
-  "Bahram Hamidi (Greene, Brooklyn)": "3b178d7c-4315-8113-9ece-e4bf2b2873a6",
-  "Patterson Shedd": "3b178d7c-4315-8194-a298-c884a955f301",
-  "Eric Kaleka": "3b178d7c-4315-81ab-82e2-f683fa6204ad",
-  "Elizabeth Kubasko": "3b178d7c-4315-819e-911a-ce71516a9e2a",
-  "Victor Bauer": "3b178d7c-4315-81ef-bc61-c6efaf252774",
-  "Kellan Clark": "3b178d7c-4315-81a3-9b9b-f5aa17d7d62d",
-  "Tyler Kurle": "3b178d7c-4315-81da-a73b-f78aa4ef4155"
-};
+async function findClientId(apiKey, opsDbId, clientName) {
+  const resp = await fetch("https://api.notion.com/v1/databases/" + opsDbId + "/query", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + apiKey,
+      "Notion-Version": NOTION_VERSION,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      filter: { property: "Client", title: { equals: clientName } },
+      page_size: 1
+    })
+  });
+  const data = await resp.json();
+  if (!resp.ok) return null;
+  return data.results.length ? data.results[0].id : null;
+}
 
 var NOTION_VERSION = "2022-06-28";
 
@@ -139,9 +110,10 @@ export default async (req) => {
 
   var NOTION_API_KEY = process.env.NOTION_API_KEY;
   var NOTION_TRANSCRIPTS_DB_ID = process.env.NOTION_TRANSCRIPTS_DB_ID;
+  var NOTION_OPS_DASHBOARD_DB_ID = process.env.NOTION_OPS_DASHBOARD_DB_ID;
 
-  if (!NOTION_API_KEY || !NOTION_TRANSCRIPTS_DB_ID) {
-    return json({ error: "Missing NOTION_API_KEY or NOTION_TRANSCRIPTS_DB_ID" }, 500);
+  if (!NOTION_API_KEY || !NOTION_TRANSCRIPTS_DB_ID || !NOTION_OPS_DASHBOARD_DB_ID) {
+    return json({ error: "Missing NOTION_API_KEY, NOTION_TRANSCRIPTS_DB_ID, or NOTION_OPS_DASHBOARD_DB_ID" }, 500);
   }
 
   var body;
@@ -161,7 +133,7 @@ export default async (req) => {
     return json({ error: "client, meetingDate, submittedBy, and transcript are all required" }, 400);
   }
 
-  var clientPageId = CLIENT_PAGE_IDS[client];
+  var clientPageId = await findClientId(NOTION_API_KEY, NOTION_OPS_DASHBOARD_DB_ID, client);
 
   try {
     var meetingTitle = client + " \u2014 " + meetingType + " \u2014 " + meetingDate;
